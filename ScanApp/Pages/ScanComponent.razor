@@ -1,0 +1,44 @@
+﻿@inject IJSRuntime JS
+@using ReactorBlazorQRCodeScanner
+
+@if (@isScanVisible == true)
+{
+    <QRCodeScanner/>
+}
+else{
+    <h2>Scanner hide</h2>
+}
+
+
+@code {
+
+    private QRCodeScannerJsInterop? _qrCodeScannerJsInterop;
+    private Action<string>? _onQrCodeScanAction;
+    private bool isScanVisible = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.Delay(1);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        _onQrCodeScanAction = (code) => OnQrCodeScan(code);  
+        _qrCodeScannerJsInterop = new QRCodeScannerJsInterop(JS);
+        await _qrCodeScannerJsInterop.Init(_onQrCodeScanAction);
+    }
+
+    private void OnQrCodeScan(string code)
+    {
+        Console.WriteLine($"OnQrCodeScan {code}");
+        StopQRScan();
+    }
+
+    protected void StopQRScan()
+    {
+        isScanVisible = false;
+        StateHasChanged();
+        if (_qrCodeScannerJsInterop != null)
+            _qrCodeScannerJsInterop.StopRecording();
+    }
+}
